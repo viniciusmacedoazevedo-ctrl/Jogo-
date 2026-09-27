@@ -44,7 +44,7 @@ jobs:
           else
             gh api -X POST "repos/$GITHUB_REPOSITORY/pages" -f "source[branch]=gh-pages" -f "source[path]=/" \
               && echo "Pages ativado" \
-              || echo "::warning::Não foi possível ativar automaticamente. Ative em Settings → Pages → Source: Deploy from a branch → gh-pages / (root)."
+              || { echo; echo "::warning::Não foi possível ativar automaticamente. Ative em Settings → Pages → Source: Deploy from a branch → gh-pages / (root)."; }
           fi
 
       - name: Conferir o site no ar
