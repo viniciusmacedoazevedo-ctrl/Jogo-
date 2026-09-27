@@ -26,9 +26,9 @@ const LEVELS = [
     build(b) {
       b.start(3);
       b.ground(0, 30);
-      b.sign(5, 7, '◀ ▶  para andar');
+      b.sign(5, 7, '◀ ▶  para andar', 'A / D ou setas para andar');
       b.coins(7, 11, 4);
-      b.sign(13, 6, 'JUMP para pular');
+      b.sign(13, 6, 'JUMP para pular', 'ESPAÇO para pular');
       b.solid(14, 10, 2, 2);
       b.coins(14, 9, 2);
       b.plat(18, 9, 4);
@@ -206,7 +206,7 @@ const LEVELS = [
       b.enemy('walker', 53);
       b.checkpoint(57);
       // o poder de fogo aparece aqui pela primeira vez
-      b.sign(61, 6, 'Brasa Viva! Aperte FIRE (ou F)');
+      b.sign(61, 6, 'Brasa Viva! Aperte FIRE', 'Brasa Viva! Aperte F para lançar fogo');
       b.power(62, 11);
       b.fire(65, 11);
       // corredor com teto baixo: só passa usando fogo

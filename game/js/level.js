@@ -164,7 +164,8 @@ class LevelBuilder {
     this.L.exit = { x: x * T - 8, y: y * T - 80, w: 48, h: 80 };
     return this;
   }
-  sign(x, y, text) { this.L.signs.push({ x: (x + 0.5) * CONFIG.TILE, y: (y + 0.5) * CONFIG.TILE, text }); return this; }
+  // pcText (opcional): texto mostrado no PC, sem controles touch
+  sign(x, y, text, pcText) { this.L.signs.push({ x: (x + 0.5) * CONFIG.TILE, y: (y + 0.5) * CONFIG.TILE, text, pcText }); return this; }
   // Arena do chefe: x0..x1 em blocos, chefe nasce em bx
   boss(x0, x1, bx) {
     const T = CONFIG.TILE;

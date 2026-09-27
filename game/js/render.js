@@ -463,11 +463,12 @@ const Render = {
     ctx.textBaseline = 'middle';
     for (const s of level.signs) {
       if (s.x < camera.x - 300 || s.x > camera.x + this.viewW + 300) continue;
-      const w = ctx.measureText(s.text).width + 20;
+      const text = !Input.isTouch && s.pcText ? s.pcText : s.text;
+      const w = ctx.measureText(text).width + 20;
       ctx.fillStyle = 'rgba(20,16,40,0.55)';
       roundRect(ctx, s.x - w / 2, s.y - 13, w, 26, 8); ctx.fill();
       ctx.fillStyle = '#fff';
-      ctx.fillText(s.text, s.x, s.y + 1);
+      ctx.fillText(text, s.x, s.y + 1);
     }
     ctx.textBaseline = 'alphabetic';
   },
