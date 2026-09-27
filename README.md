@@ -49,3 +49,19 @@ game/
 
 - **Física e dificuldade:** altere `js/config.js`.
 - **Fases:** cada fase em `js/levels/levels.js` é uma sequência de comandos, com coordenadas em blocos (`b.ground`, `b.plat`, `b.coins`, `b.enemy`, `b.checkpoint`, `b.exit`...). A lista completa de comandos está na classe `LevelBuilder`, em `js/level.js`.
+
+### APK para Android
+
+O APK pronto fica em `android/dist/brotim.apk` e roda no Android 7.0 ou mais novo.
+
+Para gerar de novo depois de mudar o jogo (precisa de Python 3, JDK e acesso ao Maven Central):
+
+```bash
+python3 android/build_apk.py
+```
+
+O app é uma tela cheia na horizontal, com um WebView que carrega a pasta `game/` embutida. Não precisa de internet.
+
+O script baixa sozinho o `android.jar`, o `dx` e o `apksig` do Maven Central. O manifesto binário e o `resources.arsc` são gerados pelo próprio script, sem Android SDK nem Gradle.
+
+A chave de assinatura é criada em `android/.keystore/`, que fica fora do git. Guarde essa pasta: um APK assinado com outra chave só instala depois de desinstalar a versão anterior, e isso apaga o progresso salvo.
