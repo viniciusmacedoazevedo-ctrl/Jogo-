@@ -1,0 +1,62 @@
+# Publica a pasta game/ no GitHub Pages (branch gh-pages).
+# Endereço: https://<usuario>.github.io/<repositorio>/
+name: GitHub Pages
+
+on:
+  workflow_dispatch:
+  push:
+    paths:
+      - 'game/**'
+      - '.github/workflows/pages.yml'
+
+permissions:
+  contents: write   # para atualizar o branch gh-pages
+  pages: write
+
+concurrency:
+  group: pages
+  cancel-in-progress: true
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Publicar game/ no branch gh-pages
+        run: |
+          cd game
+          touch .nojekyll                      # serve os arquivos como estão
+          git init -q -b gh-pages
+          git config user.name  "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add -A
+          git commit -qm "Publicar jogo ($GITHUB_SHA)"
+          git push -qf "https://x-access-token:${{ github.token }}@github.com/$GITHUB_REPOSITORY.git" gh-pages
+
+      - name: Ativar o GitHub Pages (branch gh-pages)
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          if gh api "repos/$GITHUB_REPOSITORY/pages" >/dev/null 2>&1; then
+            gh api -X PUT "repos/$GITHUB_REPOSITORY/pages" -f "source[branch]=gh-pages" -f "source[path]=/" \
+              && echo "Pages já estava ativo: fonte = gh-pages" || echo "::notice::Pages ativo (fonte não alterada)"
+          else
+            gh api -X POST "repos/$GITHUB_REPOSITORY/pages" -f "source[branch]=gh-pages" -f "source[path]=/" \
+              && echo "Pages ativado" \
+              || echo "::warning::Não foi possível ativar automaticamente. Ative em Settings → Pages → Source: Deploy from a branch → gh-pages / (root)."
+          fi
+
+      - name: Conferir o site no ar
+        run: |
+          OWNER="${GITHUB_REPOSITORY%%/*}"; REPO="${GITHUB_REPOSITORY#*/}"
+          URL="https://${OWNER,,}.github.io/${REPO}/"
+          for i in $(seq 1 30); do
+            code=$(curl -s -o page.html -w '%{http_code}' "$URL" || true)
+            if [ "$code" = "200" ] && grep -q "Brotim" page.html; then
+              echo "::notice::Jogo publicado em $URL"
+              exit 0
+            fi
+            echo "tentativa $i: HTTP $code"; sleep 20
+          done
+          echo "::warning::O site ainda não respondeu em $URL (a primeira publicação pode levar alguns minutos)."
