@@ -9,7 +9,11 @@ on:
     paths:
       - 'ios/**'
       - 'game/**'
+      - 'android/dist/**'
       - '.github/workflows/ios.yml'
+
+permissions:
+  contents: write   # para publicar o .ipa na Release "ios-latest"
 
 jobs:
   build:
@@ -51,3 +55,13 @@ jobs:
           name: Brotim-ios-ipa
           path: Brotim.ipa
           retention-days: 90
+
+      - name: Publicar na Release ios-latest (link fixo para baixar)
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          gh release delete ios-latest --yes --cleanup-tag -R "$GITHUB_REPOSITORY" || true
+          gh release create ios-latest Brotim.ipa android/dist/brotim.apk -R "$GITHUB_REPOSITORY" \
+            --target "$GITHUB_SHA" --prerelease \
+            --title "Brotim (build mais recente)" \
+            --notes "Brotim.ipa: iPhone/iPad (instale com Sideloadly ou AltStore, veja ios/README.md). brotim.apk: Android 7.0+. Gerado a partir do commit $GITHUB_SHA."
