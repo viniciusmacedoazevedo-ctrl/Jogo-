@@ -1,0 +1,202 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="theme-color" content="#15122b">
+  <title>Brotim: Jornada das Cinco Terras</title>
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Cellipse cx='32' cy='38' rx='22' ry='22' fill='%2339cbbf'/%3E%3Cellipse cx='38' cy='32' rx='5' ry='7' fill='white'/%3E%3Ccircle cx='39' cy='33' r='3' fill='%232b2d42'/%3E%3Cellipse cx='26' cy='12' rx='8' ry='4' fill='%236fdc5a'/%3E%3C/svg%3E">
+  <link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
+  <link rel="manifest" href="manifest.webmanifest">
+  <meta name="apple-mobile-web-app-title" content="Brotim">
+  <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+  <div id="app">
+    <canvas id="game"></canvas>
+
+    <!-- HUD -->
+    <div id="hud" class="hidden">
+      <div class="hud-box hud-left">
+        <div id="hud-lives"></div>
+        <div id="hud-coins">COINS: 00</div>
+        <div id="hud-fire" class="dim">FIRE: 00</div>
+        <div id="hud-keys" class="hidden">🔑 0/3</div>
+      </div>
+      <div class="hud-box hud-center">
+        <div id="hud-time">TIME: 00:00</div>
+        <div id="hud-score">0</div>
+      </div>
+      <button id="btn-pause" aria-label="Pausar">☰</button>
+    </div>
+
+    <div id="boss-bar" class="hidden">
+      <span>MORVAK</span>
+      <div class="bar"><div id="boss-fill"></div></div>
+    </div>
+
+    <div id="toast"></div>
+
+    <!-- Controles touch -->
+    <div id="controls" class="hidden">
+      <div class="pad pad-left">
+        <button class="ctl" data-key="left" aria-label="Esquerda">◀</button>
+        <button class="ctl" data-key="right" aria-label="Direita">▶</button>
+      </div>
+      <div class="pad pad-right">
+        <button class="ctl ctl-jump" data-key="jump">JUMP</button>
+        <button class="ctl ctl-fire hidden" id="ctl-fire" data-key="fire">FIRE</button>
+      </div>
+    </div>
+
+    <!-- MENU -->
+    <section id="screen-menu" class="screen">
+      <div class="panel menu-panel">
+        <h1 class="logo"><span>BROTIM</span><small>Jornada das Cinco Terras</small></h1>
+        <div class="menu-buttons">
+          <button class="btn primary" data-action="play">JOGAR</button>
+          <button class="btn" data-action="levels">FASES</button>
+          <button class="btn" data-action="settings">CONFIGURAÇÕES</button>
+          <button class="btn" data-action="howto">COMO JOGAR</button>
+        </div>
+        <div class="menu-stats">
+          <div><b>RECORDE</b><span id="menu-best">0</span></div>
+          <div><b>PROGRESSO</b><span id="menu-progress">0/5</span></div>
+          <div><b>MOEDAS TOTAIS</b><span id="menu-coins">0</span></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- SELEÇÃO DE FASES -->
+    <section id="screen-levels" class="screen">
+      <div class="panel wide">
+        <h2>FASES</h2>
+        <div id="level-list" class="level-list scroll"></div>
+        <button class="btn small" data-action="back">◀ VOLTAR</button>
+      </div>
+    </section>
+
+    <!-- COMO JOGAR -->
+    <section id="screen-howto" class="screen">
+      <div class="panel wide scroll">
+        <h2>COMO JOGAR</h2>
+        <div class="howto-grid">
+          <div><b>MOVER</b><span class="key">◀</span><span class="key">▶</span><small>ou A / D / setas</small></div>
+          <div><b>PULAR</b><span class="key wide">JUMP</span><small>ou Espaço · segure para pular mais alto</small></div>
+          <div><b>USAR FOGO</b><span class="key wide fire">FIRE</span><small>ou F · precisa da Brasa Viva</small></div>
+          <div><b>DERROTAR INIMIGOS</b><small>Pule em cima deles. O <b>Casco-de-Pedra</b> tem espinhos: só o fogo derrota.</small></div>
+        </div>
+        <ul class="howto-list">
+          <li>Colete moedas e as <b>3 moedas especiais</b> roxas de cada fase.</li>
+          <li>Tocar num inimigo pelo lado, espinhos, jatos de fogo ou cair num buraco custa 1 vida e volta ao último <b>checkpoint</b> (lanterna de cristal).</li>
+          <li>A <b>lava</b> derrota na hora. Blocos rachados quebram com cabeçada ou fogo.</li>
+          <li>O fogo tem cargas limitadas: pegue <b>brasas +3</b> pelo caminho.</li>
+          <li>No castelo, ache as <b>3 chaves</b> para abrir a porta do chefe. Pise no cristal da cabeça dele ou use fogo.</li>
+          <li>Complete desafios para ganhar até <b>3 estrelas</b> por fase.</li>
+        </ul>
+        <button class="btn small" data-action="back">◀ VOLTAR</button>
+      </div>
+    </section>
+
+    <!-- CONFIGURAÇÕES -->
+    <section id="screen-settings" class="screen">
+      <div class="panel">
+        <h2>CONFIGURAÇÕES</h2>
+        <div class="menu-buttons">
+          <button class="btn" id="set-sound" data-action="toggle-sound">SOM: ON</button>
+          <button class="btn" id="set-vibration" data-action="toggle-vibration">VIBRAÇÃO: ON</button>
+          <button class="btn" id="set-quality" data-action="toggle-quality">GRÁFICOS: ALTA</button>
+          <button class="btn" id="set-buttons" data-action="toggle-buttons">BOTÕES: NORMAIS</button>
+          <button class="btn danger small" data-action="reset-progress">APAGAR PROGRESSO</button>
+        </div>
+        <button class="btn small" data-action="back">◀ VOLTAR</button>
+      </div>
+    </section>
+
+    <!-- PAUSE -->
+    <section id="screen-pause" class="screen dim">
+      <div class="panel">
+        <h2>PAUSE</h2>
+        <div class="menu-buttons">
+          <button class="btn primary" data-action="resume">CONTINUAR</button>
+          <button class="btn" data-action="restart">REINICIAR</button>
+          <button class="btn" data-action="menu">MENU</button>
+        </div>
+      </div>
+    </section>
+
+    <!-- GAME OVER -->
+    <section id="screen-gameover" class="screen dim">
+      <div class="panel">
+        <h2 class="red">GAME OVER</h2>
+        <p>Suas vidas acabaram. Tente de novo!</p>
+        <div class="menu-buttons">
+          <button class="btn primary" data-action="restart">REINICIAR FASE</button>
+          <button class="btn" data-action="menu">MENU</button>
+        </div>
+      </div>
+    </section>
+
+    <!-- FASE CONCLUÍDA -->
+    <section id="screen-complete" class="screen dim">
+      <div class="panel scroll">
+        <h2 id="complete-title" class="title-sm">Fase concluída!</h2>
+        <div class="stars" id="complete-stars"></div>
+        <div class="result-stats" id="complete-stats"></div>
+        <ul class="challenges" id="complete-challenges"></ul>
+        <div class="new-best" id="complete-best"></div>
+        <div class="menu-buttons row">
+          <button class="btn primary" data-action="next">PRÓXIMA ▶</button>
+          <button class="btn" data-action="restart">REPETIR</button>
+          <button class="btn" data-action="menu">MENU</button>
+        </div>
+      </div>
+    </section>
+
+    <!-- VITÓRIA -->
+    <section id="screen-victory" class="screen dim">
+      <div class="panel scroll victory">
+        <h2 class="gold">VOCÊ VENCEU!</h2>
+        <p>Morvak foi derrotado e a luz voltou às Cinco Terras.</p>
+        <div class="stars" id="victory-stars"></div>
+        <div class="result-stats" id="victory-stats"></div>
+        <ul class="challenges" id="victory-challenges"></ul>
+        <p class="small-text" id="victory-total"></p>
+        <div class="menu-buttons row">
+          <button class="btn primary" data-action="menu">MENU</button>
+          <button class="btn" data-action="restart">JOGAR DE NOVO</button>
+        </div>
+      </div>
+    </section>
+
+    <!-- tela "gire o celular" -->
+    <div id="rotate">
+      <div class="phone"></div>
+      <p>Gire o celular para jogar na horizontal</p>
+    </div>
+
+    <!-- tela da partida (vazia: só mostra canvas/HUD) -->
+    <section id="screen-game" class="screen passthrough"></section>
+  </div>
+
+  <!-- ordem importa: config/dados antes de quem os usa -->
+  <script src="js/config.js"></script>
+  <script src="js/audio.js"></script>
+  <script src="js/save.js"></script>
+  <script src="js/input.js"></script>
+  <script src="js/collision.js"></script>
+  <script src="js/particles.js"></script>
+  <script src="js/levels/themes.js"></script>
+  <script src="js/level.js"></script>
+  <script src="js/levels/levels.js"></script>
+  <script src="js/player.js"></script>
+  <script src="js/enemy.js"></script>
+  <script src="js/render.js"></script>
+  <script src="js/ui.js"></script>
+  <script src="js/game.js"></script>
+  <script src="js/main.js"></script>
+</body>
+</html>

@@ -1,0 +1,34 @@
+/* Service worker: guarda o jogo no aparelho para funcionar offline.
+   Ao mudar arquivos do jogo, aumente VERSION para os jogadores receberem a atualização. */
+const VERSION = 'brotim-v1';
+const FILES = [
+  './', 'index.html', 'manifest.webmanifest', 'css/style.css',
+  'icons/icon-192.png', 'icons/icon-512.png', 'icons/apple-touch-icon.png',
+  'js/config.js', 'js/audio.js', 'js/save.js', 'js/input.js', 'js/collision.js', 'js/particles.js',
+  'js/levels/themes.js', 'js/level.js', 'js/levels/levels.js', 'js/player.js', 'js/enemy.js',
+  'js/render.js', 'js/ui.js', 'js/game.js', 'js/main.js'
+];
+
+self.addEventListener('install', (e) => {
+  e.waitUntil(caches.open(VERSION).then((c) => c.addAll(FILES)).then(() => self.skipWaiting()));
+});
+
+self.addEventListener('activate', (e) => {
+  e.waitUntil(caches.keys()
+    .then((keys) => Promise.all(keys.filter((k) => k !== VERSION).map((k) => caches.delete(k))))
+    .then(() => self.clients.claim()));
+});
+
+// Rede primeiro (pega atualizações); sem internet, usa o que está guardado
+self.addEventListener('fetch', (e) => {
+  if (e.request.method !== 'GET') return;
+  e.respondWith(
+    fetch(e.request)
+      .then((res) => {
+        const copy = res.clone();
+        caches.open(VERSION).then((c) => c.put(e.request, copy));
+        return res;
+      })
+      .catch(() => caches.match(e.request, { ignoreSearch: true }))
+  );
+});
