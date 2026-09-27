@@ -1,0 +1,53 @@
+# Compila o app iOS num Mac do GitHub e publica o Brotim.ipa (sem assinatura)
+# como artefato. Instale no iPhone com Sideloadly ou AltStore (eles assinam
+# com o seu Apple ID). Veja ios/README.md.
+name: iOS build
+
+on:
+  workflow_dispatch:
+  push:
+    paths:
+      - 'ios/**'
+      - 'game/**'
+      - '.github/workflows/ios.yml'
+
+jobs:
+  build:
+    runs-on: macos-15
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Instalar XcodeGen
+        run: brew install xcodegen
+
+      - name: Gerar projeto Xcode
+        working-directory: ios
+        run: xcodegen generate
+
+      - name: Compilar (sem assinatura)
+        run: |
+          xcodebuild -project ios/Brotim.xcodeproj -scheme Brotim -configuration Release \
+            -sdk iphoneos -destination 'generic/platform=iOS' -derivedDataPath build \
+            CODE_SIGNING_ALLOWED=NO CODE_SIGNING_REQUIRED=NO CODE_SIGN_IDENTITY="" build
+
+      - name: Conferir o app
+        run: |
+          APP=build/Build/Products/Release-iphoneos/Brotim.app
+          test -f "$APP/game/index.html"
+          test -f "$APP/game/js/main.js"
+          plutil -p "$APP/Info.plist" | grep -E "CFBundleIdentifier|CFBundleDisplayName|UISupportedInterfaceOrientations" -A2
+          ls "$APP" | head -30
+
+      - name: Empacotar Brotim.ipa
+        run: |
+          mkdir -p Payload
+          cp -R build/Build/Products/Release-iphoneos/Brotim.app Payload/
+          zip -qry Brotim.ipa Payload
+          ls -la Brotim.ipa
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: Brotim-ios-ipa
+          path: Brotim.ipa
+          retention-days: 90

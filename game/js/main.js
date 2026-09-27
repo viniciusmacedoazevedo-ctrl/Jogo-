@@ -64,6 +64,13 @@
   }
   requestAnimationFrame(frame);
 
+  // PWA: guarda os arquivos para jogar offline (só em http/https; ignorado em file:// e nos apps)
+  if ('serviceWorker' in navigator && /^https?:$/.test(location.protocol)) {
+    window.addEventListener('load', () => {
+      navigator.serviceWorker.register('sw.js').catch(() => { /* sem suporte neste contexto */ });
+    });
+  }
+
   // Atalho para testes: window.BROTIM.Game etc.
   window.BROTIM = { Game, Save, CONFIG, Input, Render, UI };
 })();

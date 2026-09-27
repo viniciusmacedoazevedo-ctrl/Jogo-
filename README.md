@@ -65,3 +65,7 @@ O app é uma tela cheia na horizontal, com um WebView que carrega a pasta `game/
 O script baixa sozinho o `android.jar`, o `dx` e o `apksig` do Maven Central. O manifesto binário e o `resources.arsc` são gerados pelo próprio script, sem Android SDK nem Gradle.
 
 A chave de assinatura é criada em `android/.keystore/`, que fica fora do git. Guarde essa pasta: um APK assinado com outra chave só instala depois de desinstalar a versão anterior, e isso apaga o progresso salvo.
+
+### iPhone / iPad
+
+Veja [`ios/README.md`](ios/README.md). O GitHub Actions compila o `Brotim.ipa` automaticamente, e ele é instalado com Sideloadly ou AltStore. O jogo também funciona como app web instalável (PWA): no Safari, **Adicionar à Tela de Início**.
